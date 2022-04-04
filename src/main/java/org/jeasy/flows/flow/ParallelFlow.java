@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * A parallel flow executes a set of work units in parallel. A {@link ParallelFlow}
@@ -107,9 +108,11 @@ public class ParallelFlow extends AbstractFlow {
 
         private static class BuildSteps implements NameStep, ExecuteStep, WithStep, BuildStep {
 
+            static final ExecutorService DEFAULT = Executors.newCachedThreadPool();
+
             private String name;
             private final List<Work> works;
-            private ExecutorService executorService;
+            private ExecutorService executorService = DEFAULT;
 
             public BuildSteps() {
                 this.name = UUID.randomUUID().toString();
