@@ -21,26 +21,12 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package org.jeasy.flows.engine;
+package org.jeasy.flows.flow;
 
-import org.jeasy.flows.work.WorkContext;
-import org.jeasy.flows.work.WorkReport;
-import org.jeasy.flows.workflow.WorkFlow;
+import org.jeasy.flows.work.AbstractWork;
 
-/**
- * Interface for a workflow engine.
- *
- * @author Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
- */
-public interface WorkFlowEngine {
-
-    /**
-     * Run the given workflow and return its report.
-     *
-     * @param workFlow to run
-     * @param workContext context in which the workflow will be run
-     * @return workflow report
-     */
-    WorkReport run(WorkFlow workFlow, WorkContext workContext);
-
+abstract class AbstractFlow extends AbstractWork implements Flow {
+    public AbstractFlow(String name) {
+        super(name);
+    }
 }

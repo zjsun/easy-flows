@@ -21,13 +21,12 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package org.jeasy.flows.workflow;
+package org.jeasy.flows.flow;
 
 import java.util.Arrays;
 import java.util.List;
 
 import org.jeasy.flows.work.Work;
-import org.jeasy.flows.work.WorkContext;
 import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
@@ -40,7 +39,7 @@ public class SequentialFlowTest {
         Work work1 = Mockito.mock(Work.class);
         Work work2 = Mockito.mock(Work.class);
         Work work3 = Mockito.mock(Work.class);
-        WorkContext workContext = Mockito.mock(WorkContext.class);
+        Context context = Mockito.mock(Context.class);
         SequentialFlow sequentialFlow = SequentialFlow.Builder.aNewSequentialFlow()
                 .named("testFlow")
                 .execute(work1)
@@ -49,13 +48,13 @@ public class SequentialFlowTest {
                 .build();
 
         // when
-        sequentialFlow.execute(workContext);
+        sequentialFlow.execute(context);
 
         // then
         InOrder inOrder = Mockito.inOrder(work1, work2, work3);
-        inOrder.verify(work1, Mockito.times(1)).execute(workContext);
-        inOrder.verify(work2, Mockito.times(1)).execute(workContext);
-        inOrder.verify(work3, Mockito.times(1)).execute(workContext);
+        inOrder.verify(work1, Mockito.times(1)).execute(context);
+        inOrder.verify(work2, Mockito.times(1)).execute(context);
+        inOrder.verify(work3, Mockito.times(1)).execute(context);
     }
 
     @Test
@@ -65,7 +64,7 @@ public class SequentialFlowTest {
         Work work2 = Mockito.mock(Work.class);
         Work work3 = Mockito.mock(Work.class);
         Work work4 = Mockito.mock(Work.class);
-        WorkContext workContext = Mockito.mock(WorkContext.class);
+        Context context = Mockito.mock(Context.class);
         List<Work> initialWorkUnits = Arrays.asList(work1, work2);
         List<Work> nextWorkUnits = Arrays.asList(work3, work4);
         SequentialFlow sequentialFlow = SequentialFlow.Builder.aNewSequentialFlow()
@@ -75,14 +74,14 @@ public class SequentialFlowTest {
                 .build();
 
         // when
-        sequentialFlow.execute(workContext);
+        sequentialFlow.execute(context);
 
         // then
         InOrder inOrder = Mockito.inOrder(work1, work2, work3, work4);
-        inOrder.verify(work1, Mockito.times(1)).execute(workContext);
-        inOrder.verify(work2, Mockito.times(1)).execute(workContext);
-        inOrder.verify(work3, Mockito.times(1)).execute(workContext);
-        inOrder.verify(work4, Mockito.times(1)).execute(workContext);
+        inOrder.verify(work1, Mockito.times(1)).execute(context);
+        inOrder.verify(work2, Mockito.times(1)).execute(context);
+        inOrder.verify(work3, Mockito.times(1)).execute(context);
+        inOrder.verify(work4, Mockito.times(1)).execute(context);
     }
 
 }

@@ -21,28 +21,28 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package org.jeasy.flows.workflow;
+package org.jeasy.flows.flow;
 
+import org.jeasy.flows.work.Report;
 import org.jeasy.flows.work.Work;
-import org.jeasy.flows.work.WorkContext;
-import org.jeasy.flows.work.WorkReport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import static org.jeasy.flows.work.WorkStatus.FAILED;
+import static org.jeasy.flows.work.Status.FAILED;
+import static org.jeasy.flows.work.Status.WAITING;
 
 /**
  * A sequential flow executes a set of work units in sequence.
- *
+ * <p>
  * If a unit of work fails, next work units in the pipeline will be skipped.
  *
  * @author Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
  */
-public class SequentialFlow extends AbstractWorkFlow {
+public class SequentialFlow extends AbstractFlow {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SequentialFlow.class.getName());
 
@@ -53,19 +53,14 @@ public class SequentialFlow extends AbstractWorkFlow {
         this.workUnits.addAll(workUnits);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public WorkReport execute(WorkContext workContext) {
-        WorkReport workReport = null;
+    @Override
+    protected Report executeInternal(Context context) {
+        Report report = null;
         for (Work work : workUnits) {
-            workReport = work.execute(workContext);
-            if (workReport != null && FAILED.equals(workReport.getStatus())) {
-                LOGGER.info("Work unit ''{}'' has failed, skipping subsequent work units", work.getName());
-                break;
-            }
+            report = work.execute(context);
+            if (report.getStatus() == FAILED || report.getStatus() == WAITING) break;
         }
-        return workReport;
+        return report;
     }
 
     public static class Builder {
@@ -84,12 +79,15 @@ public class SequentialFlow extends AbstractWorkFlow {
 
         public interface ExecuteStep {
             ThenStep execute(Work initialWork);
+
             ThenStep execute(List<Work> initialWorkUnits);
         }
 
         public interface ThenStep {
             ThenStep then(Work nextWork);
+
             ThenStep then(List<Work> nextWorkUnits);
+
             SequentialFlow build();
         }
 
@@ -97,12 +95,12 @@ public class SequentialFlow extends AbstractWorkFlow {
 
             private String name;
             private final List<Work> works;
-            
+
             BuildSteps() {
                 this.name = UUID.randomUUID().toString();
                 this.works = new ArrayList<>();
             }
-            
+
             public ExecuteStep named(String name) {
                 this.name = name;
                 return this;

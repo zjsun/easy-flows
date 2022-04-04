@@ -23,6 +23,8 @@
  */
 package org.jeasy.flows.work;
 
+import org.jeasy.flows.flow.Context;
+
 import java.util.UUID;
 
 /**
@@ -30,15 +32,14 @@ import java.util.UUID;
  *
  * @author Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
  */
-public class NoOpWork implements Work {
+public class NoOpWork extends AbstractWork {
 
-    @Override
-    public String getName() {
-        return UUID.randomUUID().toString();
+    public NoOpWork() {
+        super(UUID.randomUUID().toString());
     }
 
     @Override
-    public WorkReport execute(WorkContext workContext) {
-        return new DefaultWorkReport(WorkStatus.COMPLETED, workContext);
+    protected Report executeInternal(Context context) {
+        return new DefaultReport(Status.COMPLETED, context);
     }
 }

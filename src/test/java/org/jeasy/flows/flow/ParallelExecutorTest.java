@@ -21,14 +21,13 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package org.jeasy.flows.workflow;
+package org.jeasy.flows.flow;
 
 import org.assertj.core.api.Assertions;
-import org.jeasy.flows.work.DefaultWorkReport;
+import org.jeasy.flows.work.DefaultReport;
 import org.jeasy.flows.work.Work;
-import org.jeasy.flows.work.WorkContext;
-import org.jeasy.flows.work.WorkReport;
-import org.jeasy.flows.work.WorkStatus;
+import org.jeasy.flows.work.Report;
+import org.jeasy.flows.work.Status;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -37,24 +36,24 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class ParallelFlowExecutorTest {
+public class ParallelExecutorTest {
 
     @Test
     public void testExecute() {
 
         // given
         ExecutorService executorService = Executors.newFixedThreadPool(2);
-        HelloWorldWork work1 = new HelloWorldWork("work1", WorkStatus.COMPLETED);
-        HelloWorldWork work2 = new HelloWorldWork("work2", WorkStatus.FAILED);
-        WorkContext workContext = Mockito.mock(WorkContext.class);
-        ParallelFlowExecutor parallelFlowExecutor = new ParallelFlowExecutor(executorService);
+        HelloWorldWork work1 = new HelloWorldWork("work1", Status.COMPLETED);
+        HelloWorldWork work2 = new HelloWorldWork("work2", Status.FAILED);
+        Context context = Mockito.mock(Context.class);
+        ParallelExecutor parallelExecutor = new ParallelExecutor(executorService);
 
         // when
-        List<WorkReport> workReports = parallelFlowExecutor.executeInParallel(Arrays.asList(work1, work2), workContext);
+        List<Report> reports = parallelExecutor.executeInParallel(Arrays.asList(work1, work2), context);
         executorService.shutdown();
 
         // then
-        Assertions.assertThat(workReports).hasSize(2);
+        Assertions.assertThat(reports).hasSize(2);
         Assertions.assertThat(work1.isExecuted()).isTrue();
         Assertions.assertThat(work2.isExecuted()).isTrue();
     }
@@ -62,10 +61,10 @@ public class ParallelFlowExecutorTest {
     static class HelloWorldWork implements Work {
 
         private final String name;
-        private final WorkStatus status;
+        private final Status status;
         private boolean executed;
 
-        HelloWorldWork(String name, WorkStatus status) {
+        HelloWorldWork(String name, Status status) {
             this.name = name;
             this.status = status;
         }
@@ -76,9 +75,9 @@ public class ParallelFlowExecutorTest {
         }
 
         @Override
-        public WorkReport execute(WorkContext workContext) {
+        public Report execute(Context context) {
             executed = true;
-            return new DefaultWorkReport(status, workContext);
+            return new DefaultReport(status, context);
         }
 
         public boolean isExecuted() {

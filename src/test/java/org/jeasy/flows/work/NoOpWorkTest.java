@@ -24,6 +24,7 @@
 package org.jeasy.flows.work;
 
 import org.assertj.core.api.Assertions;
+import org.jeasy.flows.flow.Context;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -38,9 +39,9 @@ public class NoOpWorkTest {
 
 	@Test
 	public void testExecute() {
-		WorkReport workReport = work.execute(new WorkContext());
-		Assert.assertNotNull(workReport);
-		Assertions.assertThat(workReport.getStatus()).isEqualTo(WorkStatus.COMPLETED);
+		Report report = work.execute(new Context());
+		Assert.assertNotNull(report);
+		Assertions.assertThat(report.getStatus()).isEqualTo(Status.COMPLETED);
 
 	}
 }

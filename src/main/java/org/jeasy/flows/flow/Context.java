@@ -21,38 +21,53 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package org.jeasy.flows.work;
+package org.jeasy.flows.flow;
+
+import org.jeasy.flows.work.Status;
 
 import java.util.Map;
-import java.util.Set;
+import java.util.StringJoiner;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Work execution context. This can be used to pass initial parameters to the
  * workflow and share data between work units.
- * 
+ *
  * <strong>Work context instances are thread-safe.</strong>
- * 
+ *
  * @author Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
  */
-public class WorkContext {
-	
-	private final Map<String, Object> context = new ConcurrentHashMap<>();
+public class Context {
 
-	public void put(String key, Object value) {
-		context.put(key, value);
-	}
+    private final Map<String, Object> values = new ConcurrentHashMap<>();
 
-	public Object get(String key) {
-		return context.get(key);
-	}
-	
-	public Set<Map.Entry<String, Object>> getEntrySet() {
-		return context.entrySet();
-	}
+    private final Map<String, Status> states = new ConcurrentHashMap<>();
 
-	@Override
-	public String toString() {
-		return "context=" + context + '}';
-	}
+    public void put(String key, Object value) {
+        values.put(key, value);
+    }
+
+    public Object get(String key) {
+        return values.get(key);
+    }
+
+    public Map<String, Status> getStates() {
+        return states;
+    }
+
+    public boolean isCompleted() {
+        return states.size() > 0 && states.values().stream().filter(status -> status == Status.COMPLETED).count() == states.size();
+    }
+
+    public Map<String, Object> getValues() {
+        return values;
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", Context.class.getSimpleName() + "[", "]")
+                .add("values=" + values)
+                .add("states=" + states)
+                .toString();
+    }
 }

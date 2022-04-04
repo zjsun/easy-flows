@@ -21,41 +21,40 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package org.jeasy.flows.workflow;
+package org.jeasy.flows.flow;
 
 import org.assertj.core.api.Assertions;
-import org.jeasy.flows.work.DefaultWorkReport;
-import org.jeasy.flows.work.WorkContext;
-import org.jeasy.flows.work.WorkStatus;
+import org.jeasy.flows.work.DefaultReport;
+import org.jeasy.flows.work.Status;
 import org.junit.Before;
 import org.junit.Test;
 
-public class ParallelFlowReportTest {
+public class ParallelReportTest {
 
 	private Exception exception;
-	private ParallelFlowReport parallelFlowReport;
+	private ParallelReport parallelReport;
 
 	@Before
 	public void setUp() {
 		exception = new Exception("test exception");
-		WorkContext workContext = new WorkContext();
-		parallelFlowReport = new ParallelFlowReport();
-		parallelFlowReport.add(new DefaultWorkReport(WorkStatus.FAILED, workContext, exception));
-		parallelFlowReport.add(new DefaultWorkReport(WorkStatus.COMPLETED, workContext));
+		Context context = new Context();
+		parallelReport = new ParallelReport();
+		parallelReport.add(new DefaultReport(Status.FAILED, context, exception));
+		parallelReport.add(new DefaultReport(Status.COMPLETED, context));
 	}
 
 	@Test
 	public void testGetStatus() {
-		Assertions.assertThat(parallelFlowReport.getStatus()).isEqualTo(WorkStatus.FAILED);
+		Assertions.assertThat(parallelReport.getStatus()).isEqualTo(Status.FAILED);
 	}
 
 	@Test
 	public void testGetError() {
-		Assertions.assertThat(parallelFlowReport.getError()).isEqualTo(exception);
+		Assertions.assertThat(parallelReport.getError()).isEqualTo(exception);
 	}
 
 	@Test
 	public void testGetReports() {
-		Assertions.assertThat(parallelFlowReport.getReports()).hasSize(2);
+		Assertions.assertThat(parallelReport.getReports()).hasSize(2);
 	}
 }

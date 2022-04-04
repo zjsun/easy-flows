@@ -21,11 +21,10 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package org.jeasy.flows.workflow;
+package org.jeasy.flows.flow;
 
 import org.jeasy.flows.work.Work;
-import org.jeasy.flows.work.WorkContext;
-import org.jeasy.flows.work.WorkReport;
+import org.jeasy.flows.work.Report;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,36 +35,36 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
-class ParallelFlowExecutor {
+class ParallelExecutor {
 
     private final ExecutorService workExecutor;
 
-    ParallelFlowExecutor(ExecutorService workExecutor) {
+    ParallelExecutor(ExecutorService workExecutor) {
         this.workExecutor = workExecutor;
     }
 
-    List<WorkReport> executeInParallel(List<Work> workUnits, WorkContext workContext) {
+    List<Report> executeInParallel(List<Work> workUnits, Context context) {
         // prepare tasks for parallel submission
-        List<Callable<WorkReport>> tasks = new ArrayList<>(workUnits.size());
-        workUnits.forEach(work -> tasks.add(() -> work.execute(workContext)));
+        List<Callable<Report>> tasks = new ArrayList<>(workUnits.size());
+        workUnits.forEach(work -> tasks.add(() -> work.execute(context)));
 
         // submit work units and wait for results
-        List<Future<WorkReport>> futures;
+        List<Future<Report>> futures;
         try {
             futures = this.workExecutor.invokeAll(tasks);
         } catch (InterruptedException e) {
             throw new RuntimeException("The parallel flow was interrupted while executing work units", e);
         }
-        Map<Work, Future<WorkReport>> workToReportFuturesMap = new HashMap<>();
+        Map<Work, Future<Report>> workToReportFuturesMap = new HashMap<>();
         for (int index = 0; index < workUnits.size(); index++) {
             workToReportFuturesMap.put(workUnits.get(index), futures.get(index));
         }
 
         // gather reports
-        List<WorkReport> workReports = new ArrayList<>();
-        for (Map.Entry<Work, Future<WorkReport>> entry : workToReportFuturesMap.entrySet()) {
+        List<Report> reports = new ArrayList<>();
+        for (Map.Entry<Work, Future<Report>> entry : workToReportFuturesMap.entrySet()) {
             try {
-                workReports.add(entry.getValue().get());
+                reports.add(entry.getValue().get());
             } catch (InterruptedException e) {
                 String message = String.format("The parallel flow was interrupted while waiting for the result of work unit '%s'", entry.getKey().getName());
                 throw new RuntimeException(message, e);
@@ -75,6 +74,6 @@ class ParallelFlowExecutor {
             }
         }
 
-        return workReports;
+        return reports;
     }
 }

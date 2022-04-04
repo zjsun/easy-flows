@@ -21,38 +21,36 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package org.jeasy.flows.workflow;
+package org.jeasy.flows.flow;
 
-import org.jeasy.flows.work.WorkContext;
-import org.jeasy.flows.work.WorkReport;
-import org.jeasy.flows.work.WorkStatus;
+import org.jeasy.flows.work.Report;
+import org.jeasy.flows.work.Status;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Aggregate report of the partial reports of work units executed in a parallel flow.
  *
  * @author Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
  */
-public class ParallelFlowReport implements WorkReport {
+public class ParallelReport implements Report {
 
-    private final List<WorkReport> reports;
+    private final List<Report> reports;
 
     /**
-     * Create a new {@link ParallelFlowReport}.
+     * Create a new {@link ParallelReport}.
      */
-    public ParallelFlowReport() {
+    public ParallelReport() {
         this(new ArrayList<>());
     }
 
     /**
-     * Create a new {@link ParallelFlowReport}.
-     * 
+     * Create a new {@link ParallelReport}.
+     *
      * @param reports of works executed in parallel
      */
-    public ParallelFlowReport(List<WorkReport> reports) {
+    public ParallelReport(List<Report> reports) {
         this.reports = reports;
     }
 
@@ -61,37 +59,38 @@ public class ParallelFlowReport implements WorkReport {
      *
      * @return partial reports
      */
-    public List<WorkReport> getReports() {
+    public List<Report> getReports() {
         return reports;
     }
 
-    void add(WorkReport workReport) {
-        reports.add(workReport);
+    void add(Report report) {
+        reports.add(report);
     }
 
-    void addAll(List<WorkReport> workReports) {
-        reports.addAll(workReports);
+    void addAll(List<Report> reports) {
+        this.reports.addAll(reports);
     }
 
     /**
      * Return the status of the parallel flow.
-     *
+     * <p>
      * The status of a parallel flow is defined as follows:
      *
      * <ul>
-     *     <li>{@link org.jeasy.flows.work.WorkStatus#COMPLETED}: If all work units have successfully completed</li>
-     *     <li>{@link org.jeasy.flows.work.WorkStatus#FAILED}: If one of the work units has failed</li>
+     *     <li>{@link Status#COMPLETED}: If all work units have successfully completed</li>
+     *     <li>{@link Status#FAILED}: If one of the work units has failed</li>
      * </ul>
+     *
      * @return workflow status
      */
     @Override
-    public WorkStatus getStatus() {
-        for (WorkReport report : reports) {
-            if (report.getStatus().equals(WorkStatus.FAILED)) {
-                return WorkStatus.FAILED;
+    public Status getStatus() {
+        for (Report report : reports) {
+            if (report.getStatus() == Status.FAILED || report.getStatus() == Status.WAITING) {
+                return report.getStatus();
             }
         }
-        return WorkStatus.COMPLETED;
+        return Status.COMPLETED;
     }
 
     /**
@@ -101,7 +100,7 @@ public class ParallelFlowReport implements WorkReport {
      */
     @Override
     public Throwable getError() {
-        for (WorkReport report : reports) {
+        for (Report report : reports) {
             Throwable error = report.getError();
             if (error != null) {
                 return error;
@@ -114,18 +113,13 @@ public class ParallelFlowReport implements WorkReport {
      * The parallel flow context is the union of all partial contexts. In a parallel
      * flow, each work unit should have its own unique keys to avoid key overriding
      * when merging partial contexts.
-     * 
+     *
      * @return the union of all partial contexts
      */
     @Override
-    public WorkContext getWorkContext() {
-        WorkContext workContext = new WorkContext();
-        for (WorkReport report : reports) {
-            WorkContext partialContext = report.getWorkContext();
-            for (Map.Entry<String, Object> entry : partialContext.getEntrySet()) {
-                workContext.put(entry.getKey(), entry.getValue());
-            }
-        }
-        return workContext;
+    public Context getContext() {
+        Context context = new Context();
+        reports.forEach(report -> context.getValues().putAll(report.getContext().getValues()));
+        return context;
     }
 }

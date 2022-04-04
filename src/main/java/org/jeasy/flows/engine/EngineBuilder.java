@@ -21,22 +21,33 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package org.jeasy.flows.work;
+package org.jeasy.flows.engine;
 
 /**
- * Work execution status enumeration.
+ * Main entry point to create {@link Engine} instances.
  *
- * @author Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com).
+ * @author Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
  */
-public enum WorkStatus {
+public class EngineBuilder {
 
     /**
-     * The unit of work has failed.
+     * Create a new {@link EngineBuilder}.
+     * 
+     * @return a new {@link EngineBuilder}.
      */
-    FAILED,
+    public static EngineBuilder aNewEngine() {
+        return new EngineBuilder();
+    }
+
+    private EngineBuilder() {
+    }
 
     /**
-     * The unit of work has completed successfully
+     * Create a new {@link Engine}.
+     * 
+     * @return a new {@link Engine}.
      */
-    COMPLETED
+    public Engine build() {
+        return new EngineImpl();
+    }
 }

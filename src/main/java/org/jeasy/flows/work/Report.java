@@ -21,17 +21,38 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package org.jeasy.flows.workflow;
+package org.jeasy.flows.work;
 
-abstract class AbstractWorkFlow implements WorkFlow {
+import org.jeasy.flows.flow.Context;
+import org.jeasy.flows.work.Status;
 
-    private final String name;
+/**
+ * Execution report of a unit of work.
+ *
+ * @author Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
+ */
+public interface Report {
 
-    AbstractWorkFlow(String name) {
-        this.name = name;
-    }
+    /**
+     * Get work execution status.
+     * 
+     * @return execution status
+     */
+    Status getStatus();
 
-    public String getName() {
-        return name;
-    }
+    /**
+     * Get error if any. Might be {@code null}, but usually not null when
+     * the status is {@link Status#FAILED}. Typically the exception includes
+     * the exit code that might be used to drive the flow execution accordingly.
+     *
+     * @return error
+     */
+    Throwable getError();
+
+    /**
+     * Get the last work context of the flow
+     * @return last work context of the flow
+     */
+    Context getContext();
+
 }

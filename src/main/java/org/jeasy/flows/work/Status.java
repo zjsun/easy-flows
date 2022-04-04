@@ -24,32 +24,24 @@
 package org.jeasy.flows.work;
 
 /**
- * Execution report of a unit of work.
+ * Work execution status enumeration.
  *
- * @author Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
+ * @author Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com).
  */
-public interface WorkReport {
+public enum Status {
 
     /**
-     * Get work execution status.
-     * 
-     * @return execution status
+     * The unit of work has failed.
      */
-    WorkStatus getStatus();
+    FAILED,
 
     /**
-     * Get error if any. Might be {@code null}, but usually not null when
-     * the status is {@link WorkStatus#FAILED}. Typically the exception includes
-     * the exit code that might be used to drive the flow execution accordingly.
-     *
-     * @return error
+     * The unit of work has completed successfully
      */
-    Throwable getError();
+    COMPLETED,
 
     /**
-     * Get the last work context of the flow
-     * @return last work context of the flow
+     * 等待外部完成Work
      */
-    WorkContext getWorkContext();
-
+    WAITING
 }

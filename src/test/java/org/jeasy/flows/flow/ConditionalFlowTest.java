@@ -21,11 +21,10 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package org.jeasy.flows.workflow;
+package org.jeasy.flows.flow;
 
 import org.jeasy.flows.work.Work;
-import org.jeasy.flows.work.WorkContext;
-import org.jeasy.flows.work.WorkReportPredicate;
+import org.jeasy.flows.work.ReportPredicate;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -37,8 +36,8 @@ public class ConditionalFlowTest {
         Work toExecute = Mockito.mock(Work.class);
         Work nextOnPredicateSuccess = Mockito.mock(Work.class);
         Work nextOnPredicateFailure = Mockito.mock(Work.class);
-        WorkContext workContext = Mockito.mock(WorkContext.class);
-        WorkReportPredicate predicate = WorkReportPredicate.ALWAYS_TRUE;
+        Context context = Mockito.mock(Context.class);
+        ReportPredicate predicate = ReportPredicate.ALWAYS_TRUE;
         ConditionalFlow conditionalFlow = ConditionalFlow.Builder.aNewConditionalFlow()
                 .named("testFlow")
                 .execute(toExecute)
@@ -48,12 +47,12 @@ public class ConditionalFlowTest {
                 .build();
 
         // when
-        conditionalFlow.execute(workContext);
+        conditionalFlow.execute(context);
 
         // then
-        Mockito.verify(toExecute, Mockito.times(1)).execute(workContext);
-        Mockito.verify(nextOnPredicateSuccess, Mockito.times(1)).execute(workContext);
-        Mockito.verify(nextOnPredicateFailure, Mockito.never()).execute(workContext);
+        Mockito.verify(toExecute, Mockito.times(1)).execute(context);
+        Mockito.verify(nextOnPredicateSuccess, Mockito.times(1)).execute(context);
+        Mockito.verify(nextOnPredicateFailure, Mockito.never()).execute(context);
     }
 
     @Test
@@ -62,8 +61,8 @@ public class ConditionalFlowTest {
         Work toExecute = Mockito.mock(Work.class);
         Work nextOnPredicateSuccess = Mockito.mock(Work.class);
         Work nextOnPredicateFailure = Mockito.mock(Work.class);
-        WorkContext workContext = Mockito.mock(WorkContext.class);
-        WorkReportPredicate predicate = WorkReportPredicate.ALWAYS_FALSE;
+        Context context = Mockito.mock(Context.class);
+        ReportPredicate predicate = ReportPredicate.ALWAYS_FALSE;
         ConditionalFlow conditionalFlow = ConditionalFlow.Builder.aNewConditionalFlow()
                 .named("anotherTestFlow")
                 .execute(toExecute)
@@ -73,12 +72,12 @@ public class ConditionalFlowTest {
                 .build();
 
         // when
-        conditionalFlow.execute(workContext);
+        conditionalFlow.execute(context);
 
         // then
-        Mockito.verify(toExecute, Mockito.times(1)).execute(workContext);
-        Mockito.verify(nextOnPredicateFailure, Mockito.times(1)).execute(workContext);
-        Mockito.verify(nextOnPredicateSuccess, Mockito.never()).execute(workContext);
+        Mockito.verify(toExecute, Mockito.times(1)).execute(context);
+        Mockito.verify(nextOnPredicateFailure, Mockito.times(1)).execute(context);
+        Mockito.verify(nextOnPredicateSuccess, Mockito.never()).execute(context);
     }
 
 }

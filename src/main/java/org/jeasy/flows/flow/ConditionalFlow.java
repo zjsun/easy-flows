@@ -21,13 +21,13 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package org.jeasy.flows.workflow;
+package org.jeasy.flows.flow;
 
 import org.jeasy.flows.work.NoOpWork;
+import org.jeasy.flows.work.Report;
+import org.jeasy.flows.work.ReportPredicate;
+import org.jeasy.flows.work.Status;
 import org.jeasy.flows.work.Work;
-import org.jeasy.flows.work.WorkContext;
-import org.jeasy.flows.work.WorkReport;
-import org.jeasy.flows.work.WorkReportPredicate;
 
 import java.util.UUID;
 
@@ -41,16 +41,15 @@ import java.util.UUID;
  *     <li>The work to execute if the predicate is not satisfied (optional)</li>
  * </ul>
  *
- * @see ConditionalFlow.Builder
- *
  * @author Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
+ * @see ConditionalFlow.Builder
  */
-public class ConditionalFlow extends AbstractWorkFlow {
+public class ConditionalFlow extends AbstractFlow {
 
     private final Work initialWorkUnit, nextOnPredicateSuccess, nextOnPredicateFailure;
-    private final WorkReportPredicate predicate;
+    private final ReportPredicate predicate;
 
-    ConditionalFlow(String name, Work initialWorkUnit, Work nextOnPredicateSuccess, Work nextOnPredicateFailure, WorkReportPredicate predicate) {
+    ConditionalFlow(String name, Work initialWorkUnit, Work nextOnPredicateSuccess, Work nextOnPredicateFailure, ReportPredicate predicate) {
         super(name);
         this.initialWorkUnit = initialWorkUnit;
         this.nextOnPredicateSuccess = nextOnPredicateSuccess;
@@ -58,16 +57,16 @@ public class ConditionalFlow extends AbstractWorkFlow {
         this.predicate = predicate;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public WorkReport execute(WorkContext workContext) {
-        WorkReport jobReport = initialWorkUnit.execute(workContext);
-        if (predicate.apply(jobReport)) {
-            jobReport = nextOnPredicateSuccess.execute(workContext);
+    @Override
+    protected Report executeInternal(Context context) {
+        Report jobReport = initialWorkUnit.execute(context);
+        if (jobReport.getStatus() == Status.WAITING) {
+            // waiting
+        } else if (predicate.apply(jobReport)) {
+            jobReport = nextOnPredicateSuccess.execute(context);
         } else {
             if (nextOnPredicateFailure != null && !(nextOnPredicateFailure instanceof NoOpWork)) { // else is optional
-                jobReport = nextOnPredicateFailure.execute(workContext);
+                jobReport = nextOnPredicateFailure.execute(context);
             }
         }
         return jobReport;
@@ -92,7 +91,7 @@ public class ConditionalFlow extends AbstractWorkFlow {
         }
 
         public interface WhenStep {
-            ThenStep when(WorkReportPredicate predicate);
+            ThenStep when(ReportPredicate predicate);
         }
 
         public interface ThenStep {
@@ -111,14 +110,14 @@ public class ConditionalFlow extends AbstractWorkFlow {
 
             private String name;
             private Work initialWorkUnit, nextOnPredicateSuccess, nextOnPredicateFailure;
-            private WorkReportPredicate predicate;
+            private ReportPredicate predicate;
 
             BuildSteps() {
                 this.name = UUID.randomUUID().toString();
                 this.initialWorkUnit = new NoOpWork();
                 this.nextOnPredicateSuccess = new NoOpWork();
                 this.nextOnPredicateFailure = new NoOpWork();
-                this.predicate = WorkReportPredicate.ALWAYS_FALSE;
+                this.predicate = ReportPredicate.ALWAYS_FALSE;
             }
 
             @Override
@@ -134,7 +133,7 @@ public class ConditionalFlow extends AbstractWorkFlow {
             }
 
             @Override
-            public ThenStep when(WorkReportPredicate predicate) {
+            public ThenStep when(ReportPredicate predicate) {
                 this.predicate = predicate;
                 return this;
             }

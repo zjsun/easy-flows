@@ -21,49 +21,35 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package org.jeasy.flows.workflow;
+package org.jeasy.flows.flow;
 
+import org.assertj.core.api.Assertions;
 import org.jeasy.flows.work.Work;
-import org.jeasy.flows.work.WorkContext;
-import org.jeasy.flows.work.WorkReportPredicate;
+import org.jeasy.flows.work.Report;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-public class RepeatFlowTest {
+import java.util.Arrays;
+import java.util.List;
+
+public class ParallelFlowTest {
 
     @Test
-    public void testRepeatUntil() {
+    public void testExecute() {
         // given
-        Work work = Mockito.mock(Work.class);
-        WorkContext workContext = Mockito.mock(WorkContext.class);
-        WorkReportPredicate predicate = WorkReportPredicate.ALWAYS_FALSE;
-        RepeatFlow repeatFlow = RepeatFlow.Builder.aNewRepeatFlow()
-                .repeat(work)
-                .until(predicate)
-                .build();
+        Work work1 = Mockito.mock(Work.class);
+        Work work2 = Mockito.mock(Work.class);
+        Context context = Mockito.mock(Context.class);
+        ParallelExecutor parallelExecutor = Mockito.mock(ParallelExecutor.class);
+        List<Work> works = Arrays.asList(work1, work2);
+        ParallelFlow parallelFlow = new ParallelFlow("pf", works, parallelExecutor);
 
         // when
-        repeatFlow.execute(workContext);
+        Report parallelFlowReport = parallelFlow.execute(context);
 
         // then
-        Mockito.verify(work, Mockito.times(1)).execute(workContext);
-    }
-
-    @Test
-    public void testRepeatTimes() {
-        // given
-        Work work = Mockito.mock(Work.class);
-        WorkContext workContext = Mockito.mock(WorkContext.class);
-        RepeatFlow repeatFlow = RepeatFlow.Builder.aNewRepeatFlow()
-                .repeat(work)
-                .times(3)
-                .build();
-
-        // when
-        repeatFlow.execute(workContext);
-
-        // then
-        Mockito.verify(work, Mockito.times(3)).execute(workContext);
+        Assertions.assertThat(parallelFlowReport).isNotNull();
+        Mockito.verify(parallelExecutor).executeInParallel(works, context);
     }
 
 }

@@ -21,59 +21,37 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package org.jeasy.flows.work;
+package org.jeasy.flows.flow;
+
+import org.jeasy.flows.work.Work;
 
 /**
- * Default implementation of {@link WorkReport}.
+ * Interface to define a flow of work units. A workflow is also a work, this is
+ * what makes workflows composable.
  *
  * @author Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
  */
-public class DefaultWorkReport implements WorkReport {
+public interface Flow extends Work {
 
-    private final WorkStatus status;
-    private final WorkContext workContext;
-    private Throwable error;
 
     /**
-     * Create a new {@link DefaultWorkReport}.
      *
-     * @param status of work
      */
-    public DefaultWorkReport(WorkStatus status, WorkContext workContext) {
-        this.status = status;
-        this.workContext = workContext;
-    }
+    class Builder {
+        public static ConditionalFlow.Builder.NameStep conditional() {
+            return ConditionalFlow.Builder.aNewConditionalFlow();
+        }
 
-    /**
-     * Create a new {@link DefaultWorkReport}.
-     *
-     * @param status of work
-     * @param error if any
-     */
-    public DefaultWorkReport(WorkStatus status, WorkContext workContext, Throwable error) {
-        this(status, workContext);
-        this.error = error;
-    }
+        public static ParallelFlow.Builder.NameStep parallel() {
+            return ParallelFlow.Builder.aNewParallelFlow();
+        }
 
-    public WorkStatus getStatus() {
-        return status;
-    }
+        public static RepeatFlow.Builder.NameStep repeat() {
+            return RepeatFlow.Builder.aNewRepeatFlow();
+        }
 
-    public Throwable getError() {
-        return error;
-    }
-
-    @Override
-    public WorkContext getWorkContext() {
-        return workContext;
-    }
-
-    @Override
-    public String toString() {
-        return "DefaultWorkReport {" +
-                "status=" + status +
-                ", context=" + workContext +
-                ", error=" + (error == null ? "''" : error) +
-                '}';
+        public static SequentialFlow.Builder.NameStep sequential() {
+            return SequentialFlow.Builder.aNewSequentialFlow();
+        }
     }
 }

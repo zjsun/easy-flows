@@ -28,38 +28,39 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.jeasy.flows.work.DefaultWorkReport;
+import org.jeasy.flows.flow.Flow;
+import org.jeasy.flows.work.DefaultReport;
+import org.jeasy.flows.work.Report;
 import org.jeasy.flows.work.Work;
-import org.jeasy.flows.work.WorkContext;
-import org.jeasy.flows.work.WorkReport;
-import org.jeasy.flows.work.WorkStatus;
-import org.jeasy.flows.workflow.*;
+import org.jeasy.flows.flow.Context;
+import org.jeasy.flows.work.Status;
+import org.jeasy.flows.flow.*;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.jeasy.flows.engine.WorkFlowEngineBuilder.aNewWorkFlowEngine;
-import static org.jeasy.flows.work.WorkReportPredicate.COMPLETED;
-import static org.jeasy.flows.workflow.ConditionalFlow.Builder.aNewConditionalFlow;
-import static org.jeasy.flows.workflow.ParallelFlow.Builder.aNewParallelFlow;
-import static org.jeasy.flows.workflow.RepeatFlow.Builder.aNewRepeatFlow;
-import static org.jeasy.flows.workflow.SequentialFlow.Builder.aNewSequentialFlow;
+import static org.jeasy.flows.engine.EngineBuilder.aNewEngine;
+import static org.jeasy.flows.work.ReportPredicate.COMPLETED;
+import static org.jeasy.flows.flow.ConditionalFlow.Builder.aNewConditionalFlow;
+import static org.jeasy.flows.flow.ParallelFlow.Builder.aNewParallelFlow;
+import static org.jeasy.flows.flow.RepeatFlow.Builder.aNewRepeatFlow;
+import static org.jeasy.flows.flow.SequentialFlow.Builder.aNewSequentialFlow;
 
-public class WorkFlowEngineImplTest {
+public class EngineImplTest {
 
-    private final WorkFlowEngine workFlowEngine = new WorkFlowEngineImpl();
+    private final Engine engine = new EngineImpl();
 
     @Test
     public void run() {
         // given
-        WorkFlow workFlow = Mockito.mock(WorkFlow.class);
-        WorkContext workContext = Mockito.mock(WorkContext.class);
+        Flow flow = Mockito.mock(Flow.class);
+        Context context = Mockito.mock(Context.class);
 
         // when
-        workFlowEngine.run(workFlow,workContext);
+        engine.run(flow, context);
 
         // then
-        Mockito.verify(workFlow).execute(workContext);
+        Mockito.verify(flow).execute(context);
     }
 
     /**
@@ -98,12 +99,12 @@ public class WorkFlowEngineImplTest {
                 .then(conditionalFlow)
                 .build();
 
-        WorkFlowEngine workFlowEngine = aNewWorkFlowEngine().build();
-        WorkContext workContext = new WorkContext();
-        WorkReport workReport = workFlowEngine.run(sequentialFlow, workContext);
+        Engine engine = aNewEngine().build();
+        Context context = new Context();
+        Report report = engine.run(sequentialFlow, context);
         executorService.shutdown();
-        assertThat(workReport.getStatus()).isEqualTo(WorkStatus.COMPLETED);
-        System.out.println("workflow report = " + workReport);
+        assertThat(report.getStatus()).isEqualTo(Status.COMPLETED);
+        System.out.println("workflow report = " + report);
     }
 
     @Test
@@ -115,7 +116,7 @@ public class WorkFlowEngineImplTest {
         PrintMessageWork work4 = new PrintMessageWork("done");
 
         ExecutorService executorService = Executors.newFixedThreadPool(2);
-        WorkFlow workflow = aNewSequentialFlow()
+        Flow workflow = aNewSequentialFlow()
                 .execute(aNewRepeatFlow()
                             .named("print foo 3 times")
                             .repeat(work1)
@@ -132,12 +133,12 @@ public class WorkFlowEngineImplTest {
                         .build())
                 .build();
 
-        WorkFlowEngine workFlowEngine = aNewWorkFlowEngine().build();
-        WorkContext workContext = new WorkContext();
-        WorkReport workReport = workFlowEngine.run(workflow, workContext);
+        Engine engine = aNewEngine().build();
+        Context context = new Context();
+        Report report = engine.run(workflow, context);
         executorService.shutdown();
-        assertThat(workReport.getStatus()).isEqualTo(WorkStatus.COMPLETED);
-        System.out.println("workflow report = " + workReport);
+        assertThat(report.getStatus()).isEqualTo(Status.COMPLETED);
+        System.out.println("workflow report = " + report);
     }
 
     @Test
@@ -147,7 +148,7 @@ public class WorkFlowEngineImplTest {
         AggregateWordCountsWork work3 = new AggregateWordCountsWork();
         PrintWordCount work4 = new PrintWordCount();
         ExecutorService executorService = Executors.newFixedThreadPool(2);
-        WorkFlow workflow = aNewSequentialFlow()
+        Flow workflow = aNewSequentialFlow()
                 .execute(aNewParallelFlow()
                             .execute(work1, work2)
                             .with(executorService)
@@ -156,13 +157,13 @@ public class WorkFlowEngineImplTest {
                 .then(work4)
                 .build();
 
-        WorkFlowEngine workFlowEngine = aNewWorkFlowEngine().build();
-        WorkContext workContext = new WorkContext();
-        workContext.put("partition1", "hello foo");
-        workContext.put("partition2", "hello bar");
-        WorkReport workReport = workFlowEngine.run(workflow, workContext);
+        Engine engine = aNewEngine().build();
+        Context context = new Context();
+        context.put("partition1", "hello foo");
+        context.put("partition2", "hello bar");
+        Report report = engine.run(workflow, context);
         executorService.shutdown();
-        assertThat(workReport.getStatus()).isEqualTo(WorkStatus.COMPLETED);
+        assertThat(report.getStatus()).isEqualTo(Status.COMPLETED);
     }
 
     static class PrintMessageWork implements Work {
@@ -177,9 +178,9 @@ public class WorkFlowEngineImplTest {
             return "print message work";
         }
 
-        public WorkReport execute(WorkContext workContext) {
+        public Report execute(Context context) {
             System.out.println(message);
-            return new DefaultWorkReport(WorkStatus.COMPLETED, workContext);
+            return new DefaultReport(Status.COMPLETED, context);
         }
 
     }
@@ -198,10 +199,10 @@ public class WorkFlowEngineImplTest {
         }
 
         @Override
-        public WorkReport execute(WorkContext workContext) {
-            String input = (String) workContext.get("partition" + partition);
-            workContext.put("wordCountInPartition" + partition, input.split(" ").length);
-            return new DefaultWorkReport(WorkStatus.COMPLETED, workContext);
+        public Report execute(Context context) {
+            String input = (String) context.get("partition" + partition);
+            context.put("wordCountInPartition" + partition, input.split(" ").length);
+            return new DefaultReport(Status.COMPLETED, context);
         }
     }
     
@@ -213,16 +214,16 @@ public class WorkFlowEngineImplTest {
         }
 
         @Override
-        public WorkReport execute(WorkContext workContext) {
-            Set<Map.Entry<String, Object>> entrySet = workContext.getEntrySet();
+        public Report execute(Context context) {
+            Set<Map.Entry<String, Object>> entrySet = context.getValues().entrySet();
             int sum = 0;
             for (Map.Entry<String, Object> entry : entrySet) {
                 if (entry.getKey().contains("InPartition")) {
                     sum += (int) entry.getValue();
                 }
             }
-            workContext.put("totalCount", sum);
-            return new DefaultWorkReport(WorkStatus.COMPLETED, workContext);
+            context.put("totalCount", sum);
+            return new DefaultReport(Status.COMPLETED, context);
         }
     }
 
@@ -234,10 +235,10 @@ public class WorkFlowEngineImplTest {
         }
 
         @Override
-        public WorkReport execute(WorkContext workContext) {
-            int totalCount = (int) workContext.get("totalCount");
+        public Report execute(Context context) {
+            int totalCount = (int) context.get("totalCount");
             System.out.println(totalCount);
-            return new DefaultWorkReport(WorkStatus.COMPLETED, workContext);
+            return new DefaultReport(Status.COMPLETED, context);
         }
     }
 }

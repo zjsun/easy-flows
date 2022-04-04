@@ -21,35 +21,31 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package org.jeasy.flows.workflow;
+package org.jeasy.flows.engine;
 
-import org.assertj.core.api.Assertions;
-import org.jeasy.flows.work.Work;
-import org.jeasy.flows.work.WorkContext;
-import org.junit.Test;
-import org.mockito.Mockito;
+import org.jeasy.flows.flow.Flow;
+import org.jeasy.flows.work.Report;
+import org.jeasy.flows.flow.Context;
+import org.jeasy.flows.work.Status;
 
-import java.util.Arrays;
-import java.util.List;
+/**
+ * Interface for a workflow engine.
+ *
+ * @author Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
+ */
+public interface Engine {
 
-public class ParallelFlowTest {
+    void add(Flow flow);
+    Flow remove(String name);
 
-    @Test
-    public void testExecute() {
-        // given
-        Work work1 = Mockito.mock(Work.class);
-        Work work2 = Mockito.mock(Work.class);
-        WorkContext workContext = Mockito.mock(WorkContext.class);
-        ParallelFlowExecutor parallelFlowExecutor = Mockito.mock(ParallelFlowExecutor.class);
-        List<Work> works = Arrays.asList(work1, work2);
-        ParallelFlow parallelFlow = new ParallelFlow("pf", works, parallelFlowExecutor);
+    /**
+     * Run the given workflow and return its report.
+     *
+     * @param flow to run
+     * @param context context in which the workflow will be run
+     * @return workflow report
+     */
+    Report run(Flow flow, Context context);
 
-        // when
-        ParallelFlowReport parallelFlowReport = parallelFlow.execute(workContext);
-
-        // then
-        Assertions.assertThat(parallelFlowReport).isNotNull();
-        Mockito.verify(parallelFlowExecutor).executeInParallel(works, workContext);
-    }
-
+    Report notify(String name, String workName, Status status);
 }

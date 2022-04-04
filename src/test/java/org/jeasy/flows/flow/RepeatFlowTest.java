@@ -21,22 +21,48 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package org.jeasy.flows.engine;
+package org.jeasy.flows.flow;
 
-import org.jeasy.flows.work.WorkContext;
-import org.jeasy.flows.work.WorkReport;
-import org.jeasy.flows.workflow.WorkFlow;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.jeasy.flows.work.Work;
+import org.jeasy.flows.work.ReportPredicate;
+import org.junit.Test;
+import org.mockito.Mockito;
 
+public class RepeatFlowTest {
 
-class WorkFlowEngineImpl implements WorkFlowEngine {
+    @Test
+    public void testRepeatUntil() {
+        // given
+        Work work = Mockito.mock(Work.class);
+        Context context = Mockito.mock(Context.class);
+        ReportPredicate predicate = ReportPredicate.ALWAYS_FALSE;
+        RepeatFlow repeatFlow = RepeatFlow.Builder.aNewRepeatFlow()
+                .repeat(work)
+                .until(predicate)
+                .build();
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(WorkFlowEngineImpl.class);
+        // when
+        repeatFlow.execute(context);
 
-    public WorkReport run(WorkFlow workFlow, WorkContext workContext) {
-        LOGGER.info("Running workflow ''{}''", workFlow.getName());
-        return workFlow.execute(workContext);
+        // then
+        Mockito.verify(work, Mockito.times(1)).execute(context);
+    }
+
+    @Test
+    public void testRepeatTimes() {
+        // given
+        Work work = Mockito.mock(Work.class);
+        Context context = Mockito.mock(Context.class);
+        RepeatFlow repeatFlow = RepeatFlow.Builder.aNewRepeatFlow()
+                .repeat(work)
+                .times(3)
+                .build();
+
+        // when
+        repeatFlow.execute(context);
+
+        // then
+        Mockito.verify(work, Mockito.times(3)).execute(context);
     }
 
 }

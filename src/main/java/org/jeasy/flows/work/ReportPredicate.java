@@ -31,27 +31,27 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
  */
 @FunctionalInterface
-public interface WorkReportPredicate {
+public interface ReportPredicate {
 
     /**
      * Apply the predicate on the given work report.
      * 
-     * @param workReport on which the predicate should be applied
+     * @param report on which the predicate should be applied
      * @return true if the predicate applies on the given report, false otherwise
      */
-    boolean apply(WorkReport workReport);
+    boolean apply(Report report);
 
-    WorkReportPredicate ALWAYS_TRUE = workReport -> true;
-    WorkReportPredicate ALWAYS_FALSE = workReport -> false;
-    WorkReportPredicate COMPLETED = workReport -> workReport.getStatus().equals(WorkStatus.COMPLETED);
-    WorkReportPredicate FAILED = workReport -> workReport.getStatus().equals(WorkStatus.FAILED);
+    ReportPredicate ALWAYS_TRUE = report -> true;
+    ReportPredicate ALWAYS_FALSE = report -> false;
+    ReportPredicate COMPLETED = report -> report.getStatus().equals(Status.COMPLETED);
+    ReportPredicate FAILED = report -> report.getStatus().equals(Status.FAILED);
 
     /**
      * A predicate that returns true after a given number of times.
      *
      * @author Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
      */
-    class TimesPredicate implements WorkReportPredicate {
+    class TimesPredicate implements ReportPredicate {
 
         private final int times;
 
@@ -62,7 +62,7 @@ public interface WorkReportPredicate {
         }
 
         @Override
-        public boolean apply(WorkReport workReport) {
+        public boolean apply(Report report) {
             return counter.incrementAndGet() != times;
         }
 

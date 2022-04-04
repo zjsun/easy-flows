@@ -21,33 +21,61 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package org.jeasy.flows.engine;
+package org.jeasy.flows.work;
+
+import org.jeasy.flows.flow.Context;
 
 /**
- * Main entry point to create {@link WorkFlowEngine} instances.
+ * Default implementation of {@link Report}.
  *
  * @author Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
  */
-public class WorkFlowEngineBuilder {
+public class DefaultReport implements Report {
+
+    private final Status status;
+    private final Context context;
+    private Throwable error;
 
     /**
-     * Create a new {@link WorkFlowEngineBuilder}.
-     * 
-     * @return a new {@link WorkFlowEngineBuilder}.
+     * Create a new {@link DefaultReport}.
+     *
+     * @param status of work
      */
-    public static WorkFlowEngineBuilder aNewWorkFlowEngine() {
-        return new WorkFlowEngineBuilder();
-    }
-
-    private WorkFlowEngineBuilder() {
+    public DefaultReport(Status status, Context context) {
+        this.status = status;
+        this.context = context;
     }
 
     /**
-     * Create a new {@link WorkFlowEngine}.
-     * 
-     * @return a new {@link WorkFlowEngine}.
+     * Create a new {@link DefaultReport}.
+     *
+     * @param status of work
+     * @param error if any
      */
-    public WorkFlowEngine build() {
-        return new WorkFlowEngineImpl();
+    public DefaultReport(Status status, Context context, Throwable error) {
+        this(status, context);
+        this.error = error;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public Throwable getError() {
+        return error;
+    }
+
+    @Override
+    public Context getContext() {
+        return context;
+    }
+
+    @Override
+    public String toString() {
+        return "DefaultWorkReport {" +
+                "status=" + status +
+                ", context=" + context +
+                ", error=" + (error == null ? "''" : error) +
+                '}';
     }
 }

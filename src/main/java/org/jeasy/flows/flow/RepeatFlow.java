@@ -21,13 +21,13 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package org.jeasy.flows.workflow;
+package org.jeasy.flows.flow;
 
 import org.jeasy.flows.work.NoOpWork;
+import org.jeasy.flows.work.Report;
+import org.jeasy.flows.work.ReportPredicate;
+import org.jeasy.flows.work.Status;
 import org.jeasy.flows.work.Work;
-import org.jeasy.flows.work.WorkContext;
-import org.jeasy.flows.work.WorkReportPredicate;
-import org.jeasy.flows.work.WorkReport;
 
 import java.util.UUID;
 
@@ -36,26 +36,25 @@ import java.util.UUID;
  *
  * @author Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
  */
-public class RepeatFlow extends AbstractWorkFlow {
+public class RepeatFlow extends AbstractFlow {
 
     private final Work work;
-    private final WorkReportPredicate predicate;
+    private final ReportPredicate predicate;
 
-    RepeatFlow(String name, Work work, WorkReportPredicate predicate) {
+    RepeatFlow(String name, Work work, ReportPredicate predicate) {
         super(name);
         this.work = work;
         this.predicate = predicate;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public WorkReport execute(WorkContext workContext) {
-        WorkReport workReport;
+    @Override
+    protected Report executeInternal(Context context) {
+        Report report;
         do {
-            workReport = work.execute(workContext);
-        } while (predicate.apply(workReport));
-        return workReport;
+            report = work.execute(context);
+            if (report.getStatus() == Status.WAITING) break;
+        } while (predicate.apply(report));
+        return report;
     }
 
     public static class Builder {
@@ -77,7 +76,8 @@ public class RepeatFlow extends AbstractWorkFlow {
         }
 
         public interface UntilStep {
-            BuildStep until(WorkReportPredicate predicate);
+            BuildStep until(ReportPredicate predicate);
+
             BuildStep times(int times);
         }
 
@@ -89,14 +89,14 @@ public class RepeatFlow extends AbstractWorkFlow {
 
             private String name;
             private Work work;
-            private WorkReportPredicate predicate;
+            private ReportPredicate predicate;
 
             BuildSteps() {
                 this.name = UUID.randomUUID().toString();
                 this.work = new NoOpWork();
-                this.predicate = WorkReportPredicate.ALWAYS_FALSE;
+                this.predicate = ReportPredicate.ALWAYS_FALSE;
             }
-            
+
             @Override
             public RepeatStep named(String name) {
                 this.name = name;
@@ -110,14 +110,14 @@ public class RepeatFlow extends AbstractWorkFlow {
             }
 
             @Override
-            public BuildStep until(WorkReportPredicate predicate) {
+            public BuildStep until(ReportPredicate predicate) {
                 this.predicate = predicate;
                 return this;
             }
 
             @Override
             public BuildStep times(int times) {
-                until(WorkReportPredicate.TimesPredicate.times(times));
+                until(ReportPredicate.TimesPredicate.times(times));
                 return this;
             }
 

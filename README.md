@@ -51,9 +51,9 @@ class PrintMessageWork implements Work {
         return "print message work";
     }
 
-    public WorkReport execute(WorkContext workContext) {
+    public WorkReport execute(WorkContext context) {
         System.out.println(message);
-        return new DefaultWorkReport(WorkStatus.COMPLETED, workContext);
+        return new DefaultWorkReport(WorkStatus.COMPLETED, context);
     }
 }
 ```
@@ -103,9 +103,9 @@ WorkFlow workflow = aNewSequentialFlow() // flow 4
                 .build())
         .build();
 
-WorkFlowEngine workFlowEngine = aNewWorkFlowEngine().build();
-WorkContext workContext = new WorkContext();
-WorkReport workReport = workFlowEngine.run(workflow, workContext);
+WorkFlowEngine engine = aNewWorkFlowEngine().build();
+WorkContext context = new WorkContext();
+WorkReport report = engine.run(workflow, context);
 executorService.shutdown();
 ```
 

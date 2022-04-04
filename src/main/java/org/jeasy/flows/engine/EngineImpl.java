@@ -21,15 +21,46 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-package org.jeasy.flows.workflow;
+package org.jeasy.flows.engine;
 
-import org.jeasy.flows.work.Work;
+import org.jeasy.flows.flow.Context;
+import org.jeasy.flows.work.Report;
+import org.jeasy.flows.flow.Flow;
+import org.jeasy.flows.work.Status;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * Interface to define a flow of work units. A workflow is also a work, this is 
- * what makes workflows composable.
- *
- * @author Mahmoud Ben Hassine (mahmoud.benhassine@icloud.com)
- */
-public interface WorkFlow extends Work {
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+
+class EngineImpl implements Engine {
+
+    private static final Logger logger = LoggerFactory.getLogger(EngineImpl.class);
+
+    private Map<String, Flow> flows = new ConcurrentHashMap<>();
+    private Map<String, Context> contexts = new ConcurrentHashMap<>();
+
+    @Override
+    public void add(Flow flow) {
+        flows.put(flow.getName(), flow);
+    }
+
+    @Override
+    public Flow remove(String name) {
+        return flows.remove(name);
+    }
+
+    @Override
+    public Report run(Flow flow, Context context) {
+        logger.info("Running workflow ''{}''", flow.getName());
+        return flow.execute(context);
+    }
+
+    @Override
+    public Report notify(String name, String workName, Status status) {
+        return null;
+    }
+
+
 }
