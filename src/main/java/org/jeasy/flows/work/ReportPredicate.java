@@ -45,6 +45,7 @@ public interface ReportPredicate {
     ReportPredicate ALWAYS_FALSE = report -> false;
     ReportPredicate COMPLETED = report -> report.getStatus().equals(Status.COMPLETED);
     ReportPredicate FAILED = report -> report.getStatus().equals(Status.FAILED);
+    ReportPredicate WAITING = report -> report.getStatus().equals(Status.WAITING);
 
     /**
      * A predicate that returns true after a given number of times.

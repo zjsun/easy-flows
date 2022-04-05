@@ -26,6 +26,8 @@ package org.jeasy.flows.flow;
 import java.util.Arrays;
 import java.util.List;
 
+import org.jeasy.flows.work.Executable;
+import org.jeasy.flows.work.ExecutableWork;
 import org.jeasy.flows.work.Work;
 import org.junit.Test;
 import org.mockito.InOrder;
@@ -36,9 +38,9 @@ public class SequentialFlowTest {
     @Test
     public void testExecute() {
         // given
-        Work work1 = Mockito.mock(Work.class);
-        Work work2 = Mockito.mock(Work.class);
-        Work work3 = Mockito.mock(Work.class);
+        ExecutableWork work1 = Mockito.mock(ExecutableWork.class);
+        ExecutableWork work2 = Mockito.mock(ExecutableWork.class);
+        ExecutableWork work3 = Mockito.mock(ExecutableWork.class);
         Context context = Mockito.mock(Context.class);
         SequentialFlow sequentialFlow = SequentialFlow.Builder.aNewSequentialFlow()
                 .named("testFlow")
@@ -60,10 +62,10 @@ public class SequentialFlowTest {
     @Test
     public void testPassingMultipleWorkUnitsAtOnce() {
         // given
-        Work work1 = Mockito.mock(Work.class);
-        Work work2 = Mockito.mock(Work.class);
-        Work work3 = Mockito.mock(Work.class);
-        Work work4 = Mockito.mock(Work.class);
+        ExecutableWork work1 = Mockito.mock(ExecutableWork.class);
+        ExecutableWork work2 = Mockito.mock(ExecutableWork.class);
+        ExecutableWork work3 = Mockito.mock(ExecutableWork.class);
+        ExecutableWork work4 = Mockito.mock(ExecutableWork.class);
         Context context = Mockito.mock(Context.class);
         List<Work> initialWorkUnits = Arrays.asList(work1, work2);
         List<Work> nextWorkUnits = Arrays.asList(work3, work4);

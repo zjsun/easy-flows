@@ -23,6 +23,7 @@
  */
 package org.jeasy.flows.flow;
 
+import org.jeasy.flows.work.Executable;
 import org.jeasy.flows.work.NoOpWork;
 import org.jeasy.flows.work.Report;
 import org.jeasy.flows.work.ReportPredicate;
@@ -51,8 +52,8 @@ public class RepeatFlow extends AbstractFlow {
     protected Report executeInternal(Context context) {
         Report report;
         do {
-            report = work.execute(context);
-            if (report.getStatus() == Status.WAITING) break;
+            report = ((Executable)work).execute(context);
+            if (report != null && report.getStatus() == Status.WAITING) break;
         } while (predicate.apply(report));
         return report;
     }

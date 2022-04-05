@@ -24,42 +24,21 @@
 package org.jeasy.flows.engine;
 
 import org.jeasy.flows.flow.Context;
-import org.jeasy.flows.work.Report;
 import org.jeasy.flows.flow.Flow;
-import org.jeasy.flows.work.Status;
+import org.jeasy.flows.work.Executable;
+import org.jeasy.flows.work.Report;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 
 class EngineImpl implements Engine {
 
     private static final Logger logger = LoggerFactory.getLogger(EngineImpl.class);
 
-    private Map<String, Flow> flows = new ConcurrentHashMap<>();
-    private Map<String, Context> contexts = new ConcurrentHashMap<>();
-
-    @Override
-    public void add(Flow flow) {
-        flows.put(flow.getName(), flow);
-    }
-
-    @Override
-    public Flow remove(String name) {
-        return flows.remove(name);
-    }
 
     @Override
     public Report run(Flow flow, Context context) {
-        logger.info("Running workflow ''{}''", flow.getName());
-        return flow.execute(context);
-    }
-
-    @Override
-    public Report notify(String name, String workName, Status status) {
-        return null;
+        return ((Executable) flow).execute(context);
     }
 
 

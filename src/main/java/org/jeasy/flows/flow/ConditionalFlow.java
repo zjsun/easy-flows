@@ -23,6 +23,7 @@
  */
 package org.jeasy.flows.flow;
 
+import org.jeasy.flows.work.Executable;
 import org.jeasy.flows.work.NoOpWork;
 import org.jeasy.flows.work.Report;
 import org.jeasy.flows.work.ReportPredicate;
@@ -59,14 +60,16 @@ public class ConditionalFlow extends AbstractFlow {
 
     @Override
     protected Report executeInternal(Context context) {
-        Report jobReport = initialWorkUnit.execute(context);
-        if (jobReport.getStatus() == Status.WAITING) {
-            // waiting
-        } else if (predicate.apply(jobReport)) {
-            jobReport = nextOnPredicateSuccess.execute(context);
+        Report jobReport = ((Executable) initialWorkUnit).execute(context);
+        if (jobReport != null && jobReport.getStatus() == Status.WAITING) {
+            return jobReport;
+        }
+
+        if (predicate.apply(jobReport)) {
+            jobReport = ((Executable) nextOnPredicateSuccess).execute(context);
         } else {
             if (nextOnPredicateFailure != null && !(nextOnPredicateFailure instanceof NoOpWork)) { // else is optional
-                jobReport = nextOnPredicateFailure.execute(context);
+                jobReport = ((Executable) nextOnPredicateFailure).execute(context);
             }
         }
         return jobReport;

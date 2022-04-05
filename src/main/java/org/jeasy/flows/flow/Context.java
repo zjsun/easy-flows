@@ -26,6 +26,7 @@ package org.jeasy.flows.flow;
 import org.jeasy.flows.work.Status;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.StringJoiner;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -43,24 +44,28 @@ public class Context {
 
     private final Map<String, Status> states = new ConcurrentHashMap<>();
 
-    public void put(String key, Object value) {
+    public void setValue(String key, Object value) {
         values.put(key, value);
     }
 
-    public Object get(String key) {
+    public Object getValue(String key) {
         return values.get(key);
     }
 
-    public Map<String, Status> getStates() {
-        return states;
+    public Set<String> valueKeys() {
+        return values.keySet();
     }
 
-    public boolean isCompleted() {
-        return states.size() > 0 && states.values().stream().filter(status -> status == Status.COMPLETED).count() == states.size();
+    public Status getStatus(String name) {
+        return states.get(name);
     }
 
-    public Map<String, Object> getValues() {
-        return values;
+    public void setStatus(String name, Status status) {
+        states.put(name, status);
+    }
+
+    public Set<String> statusNames() {
+        return states.keySet();
     }
 
     @Override

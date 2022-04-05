@@ -6,7 +6,7 @@ import org.jeasy.flows.flow.Context;
  * @author Alex.Sun
  * @created 2022-04-04 16:50
  */
-public abstract class AbstractWork implements Work {
+public abstract class AbstractWork implements ExecutableWork {
 
     private final String name;
 
@@ -20,12 +20,14 @@ public abstract class AbstractWork implements Work {
 
     @Override
     public final Report execute(Context context) {
-        if (context.getStates().get(getName()) == Status.COMPLETED) {
+        if (context.getStatus(getName()) == Status.COMPLETED) {
             return new DefaultReport(Status.COMPLETED, context);
         }
 
         Report report = executeInternal(context);
-        context.getStates().put(getName(), report.getStatus());
+        if (report != null) {
+            context.setStatus(getName(), report.getStatus());
+        }
         return report;
     }
 

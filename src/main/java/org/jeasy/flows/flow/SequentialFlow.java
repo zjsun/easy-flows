@@ -23,6 +23,7 @@
  */
 package org.jeasy.flows.flow;
 
+import org.jeasy.flows.work.Executable;
 import org.jeasy.flows.work.Report;
 import org.jeasy.flows.work.Work;
 import org.slf4j.Logger;
@@ -57,8 +58,8 @@ public class SequentialFlow extends AbstractFlow {
     protected Report executeInternal(Context context) {
         Report report = null;
         for (Work work : workUnits) {
-            report = work.execute(context);
-            if (report.getStatus() == FAILED || report.getStatus() == WAITING) break;
+            report = ((Executable) work).execute(context);
+            if (report != null && (report.getStatus() == FAILED || report.getStatus() == WAITING)) break;
         }
         return report;
     }

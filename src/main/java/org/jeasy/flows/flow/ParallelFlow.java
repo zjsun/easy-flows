@@ -55,16 +55,18 @@ public class ParallelFlow extends AbstractFlow {
 
     private final List<Work> workUnits = new ArrayList<>();
     private final ParallelExecutor workExecutor;
+    private final ParallelPolicy parallelPolicy;
 
-    ParallelFlow(String name, List<Work> workUnits, ParallelExecutor parallelExecutor) {
+    ParallelFlow(String name, List<Work> workUnits, ParallelExecutor parallelExecutor, ParallelPolicy parallelPolicy) {
         super(name);
         this.workUnits.addAll(workUnits);
         this.workExecutor = parallelExecutor;
+        this.parallelPolicy = parallelPolicy;
     }
 
     @Override
     protected Report executeInternal(Context context) {
-        ParallelReport parallelReport = new ParallelReport();
+        ParallelReport parallelReport = new ParallelReport(parallelPolicy);
         List<Report> reports = workExecutor.executeInParallel(workUnits, context);
         parallelReport.addAll(reports);
         return parallelReport;
@@ -99,20 +101,28 @@ public class ParallelFlow extends AbstractFlow {
              * @param executorService to use to execute work units in parallel
              * @return the builder instance
              */
-            BuildStep with(ExecutorService executorService);
+            PolicyStep with(ExecutorService executorService);
+        }
+
+        public interface PolicyStep {
+            BuildStep policy(ParallelPolicy policy);
         }
 
         public interface BuildStep {
             ParallelFlow build();
         }
 
-        private static class BuildSteps implements NameStep, ExecuteStep, WithStep, BuildStep {
+        private static class BuildSteps implements NameStep, ExecuteStep, WithStep, BuildStep, PolicyStep {
 
             static final ExecutorService DEFAULT = Executors.newCachedThreadPool();
+            static {
+                Runtime.getRuntime().addShutdownHook(new Thread(() -> DEFAULT.shutdown()));
+            }
 
             private String name;
             private final List<Work> works;
             private ExecutorService executorService = DEFAULT;
+            private ParallelPolicy policy = ParallelPolicy.AND;
 
             public BuildSteps() {
                 this.name = UUID.randomUUID().toString();
@@ -132,8 +142,14 @@ public class ParallelFlow extends AbstractFlow {
             }
 
             @Override
-            public BuildStep with(ExecutorService executorService) {
+            public PolicyStep with(ExecutorService executorService) {
                 this.executorService = executorService;
+                return this;
+            }
+
+            @Override
+            public BuildStep policy(ParallelPolicy policy) {
+                this.policy = policy;
                 return this;
             }
 
@@ -141,7 +157,7 @@ public class ParallelFlow extends AbstractFlow {
             public ParallelFlow build() {
                 return new ParallelFlow(
                         this.name, this.works,
-                        new ParallelExecutor(this.executorService));
+                        new ParallelExecutor(this.executorService), this.policy);
             }
         }
 

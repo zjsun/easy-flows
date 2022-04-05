@@ -42,7 +42,7 @@ public class ParallelFlowTest {
         Context context = Mockito.mock(Context.class);
         ParallelExecutor parallelExecutor = Mockito.mock(ParallelExecutor.class);
         List<Work> works = Arrays.asList(work1, work2);
-        ParallelFlow parallelFlow = new ParallelFlow("pf", works, parallelExecutor);
+        ParallelFlow parallelFlow = new ParallelFlow("pf", works, parallelExecutor, ParallelPolicy.AND);
 
         // when
         Report parallelFlowReport = parallelFlow.execute(context);

@@ -23,28 +23,33 @@
  */
 package org.jeasy.flows.engine;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import org.jeasy.flows.flow.Flow;
-import org.jeasy.flows.work.DefaultReport;
-import org.jeasy.flows.work.Report;
-import org.jeasy.flows.work.Work;
+import org.jeasy.flows.flow.ConditionalFlow;
 import org.jeasy.flows.flow.Context;
+import org.jeasy.flows.flow.ExecutableFlow;
+import org.jeasy.flows.flow.Flow;
+import org.jeasy.flows.flow.ParallelFlow;
+import org.jeasy.flows.flow.ParallelPolicy;
+import org.jeasy.flows.flow.RepeatFlow;
+import org.jeasy.flows.flow.SequentialFlow;
+import org.jeasy.flows.work.DefaultReport;
+import org.jeasy.flows.work.Executable;
+import org.jeasy.flows.work.ExecutableWork;
+import org.jeasy.flows.work.Report;
 import org.jeasy.flows.work.Status;
-import org.jeasy.flows.flow.*;
+import org.jeasy.flows.work.Work;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.jeasy.flows.engine.EngineBuilder.aNewEngine;
-import static org.jeasy.flows.work.ReportPredicate.COMPLETED;
 import static org.jeasy.flows.flow.ConditionalFlow.Builder.aNewConditionalFlow;
 import static org.jeasy.flows.flow.ParallelFlow.Builder.aNewParallelFlow;
 import static org.jeasy.flows.flow.RepeatFlow.Builder.aNewRepeatFlow;
 import static org.jeasy.flows.flow.SequentialFlow.Builder.aNewSequentialFlow;
+import static org.jeasy.flows.work.ReportPredicate.COMPLETED;
 
 public class EngineImplTest {
 
@@ -53,7 +58,7 @@ public class EngineImplTest {
     @Test
     public void run() {
         // given
-        Flow flow = Mockito.mock(Flow.class);
+        ExecutableFlow flow = Mockito.mock(ExecutableFlow.class);
         Context context = Mockito.mock(Context.class);
 
         // when
@@ -86,6 +91,7 @@ public class EngineImplTest {
                 .named("print 'hello' and 'world' in parallel")
                 .execute(work2, work3)
                 .with(executorService)
+                .policy(ParallelPolicy.AND)
                 .build();
 
         ConditionalFlow conditionalFlow = aNewConditionalFlow()
@@ -118,16 +124,17 @@ public class EngineImplTest {
         ExecutorService executorService = Executors.newFixedThreadPool(2);
         Flow workflow = aNewSequentialFlow()
                 .execute(aNewRepeatFlow()
-                            .named("print foo 3 times")
-                            .repeat(work1)
-                            .times(3)
-                            .build())
+                        .named("print foo 3 times")
+                        .repeat(work1)
+                        .times(3)
+                        .build())
                 .then(aNewConditionalFlow()
                         .execute(aNewParallelFlow()
-                                    .named("print 'hello' and 'world' in parallel")
-                                    .execute(work2, work3)
-                                    .with(executorService)
-                                    .build())
+                                .named("print 'hello' and 'world' in parallel")
+                                .execute(work2, work3)
+                                .with(executorService)
+                                .policy(ParallelPolicy.AND)
+                                .build())
                         .when(COMPLETED)
                         .then(work4)
                         .build())
@@ -150,23 +157,24 @@ public class EngineImplTest {
         ExecutorService executorService = Executors.newFixedThreadPool(2);
         Flow workflow = aNewSequentialFlow()
                 .execute(aNewParallelFlow()
-                            .execute(work1, work2)
-                            .with(executorService)
-                            .build())
+                        .execute(work1, work2)
+                        .with(executorService)
+                        .policy(ParallelPolicy.AND)
+                        .build())
                 .then(work3)
                 .then(work4)
                 .build();
 
         Engine engine = aNewEngine().build();
         Context context = new Context();
-        context.put("partition1", "hello foo");
-        context.put("partition2", "hello bar");
+        context.setValue("partition1", "hello foo");
+        context.setValue("partition2", "hello bar");
         Report report = engine.run(workflow, context);
         executorService.shutdown();
         assertThat(report.getStatus()).isEqualTo(Status.COMPLETED);
     }
 
-    static class PrintMessageWork implements Work {
+    static class PrintMessageWork implements ExecutableWork {
 
         private final String message;
 
@@ -184,8 +192,8 @@ public class EngineImplTest {
         }
 
     }
-    
-    static class WordCountWork implements Work {
+
+    static class WordCountWork implements Work, Executable {
 
         private final int partition;
 
@@ -200,13 +208,13 @@ public class EngineImplTest {
 
         @Override
         public Report execute(Context context) {
-            String input = (String) context.get("partition" + partition);
-            context.put("wordCountInPartition" + partition, input.split(" ").length);
+            String input = (String) context.getValue("partition" + partition);
+            context.setValue("wordCountInPartition" + partition, input.split(" ").length);
             return new DefaultReport(Status.COMPLETED, context);
         }
     }
-    
-    static class AggregateWordCountsWork implements Work {
+
+    static class AggregateWordCountsWork implements Work, Executable {
 
         @Override
         public String getName() {
@@ -215,19 +223,18 @@ public class EngineImplTest {
 
         @Override
         public Report execute(Context context) {
-            Set<Map.Entry<String, Object>> entrySet = context.getValues().entrySet();
             int sum = 0;
-            for (Map.Entry<String, Object> entry : entrySet) {
-                if (entry.getKey().contains("InPartition")) {
-                    sum += (int) entry.getValue();
+            for (String key : context.valueKeys()) {
+                if (key.contains("InPartition")) {
+                    sum += (int) context.getValue(key);
                 }
             }
-            context.put("totalCount", sum);
+            context.setValue("totalCount", sum);
             return new DefaultReport(Status.COMPLETED, context);
         }
     }
 
-    static class PrintWordCount implements Work {
+    static class PrintWordCount implements Work, Executable {
 
         @Override
         public String getName() {
@@ -236,7 +243,7 @@ public class EngineImplTest {
 
         @Override
         public Report execute(Context context) {
-            int totalCount = (int) context.get("totalCount");
+            int totalCount = (int) context.getValue("totalCount");
             System.out.println(totalCount);
             return new DefaultReport(Status.COMPLETED, context);
         }

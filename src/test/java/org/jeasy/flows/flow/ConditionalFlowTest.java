@@ -23,6 +23,8 @@
  */
 package org.jeasy.flows.flow;
 
+import org.jeasy.flows.work.Executable;
+import org.jeasy.flows.work.ExecutableWork;
 import org.jeasy.flows.work.Work;
 import org.jeasy.flows.work.ReportPredicate;
 import org.junit.Test;
@@ -33,9 +35,9 @@ public class ConditionalFlowTest {
     @Test
     public void callOnPredicateSuccess() {
         // given
-        Work toExecute = Mockito.mock(Work.class);
-        Work nextOnPredicateSuccess = Mockito.mock(Work.class);
-        Work nextOnPredicateFailure = Mockito.mock(Work.class);
+        ExecutableWork toExecute = Mockito.mock(ExecutableWork.class);
+        ExecutableWork nextOnPredicateSuccess = Mockito.mock(ExecutableWork.class);
+        ExecutableWork nextOnPredicateFailure = Mockito.mock(ExecutableWork.class);
         Context context = Mockito.mock(Context.class);
         ReportPredicate predicate = ReportPredicate.ALWAYS_TRUE;
         ConditionalFlow conditionalFlow = ConditionalFlow.Builder.aNewConditionalFlow()
@@ -58,9 +60,9 @@ public class ConditionalFlowTest {
     @Test
     public void callOnPredicateFailure() {
         // given
-        Work toExecute = Mockito.mock(Work.class);
-        Work nextOnPredicateSuccess = Mockito.mock(Work.class);
-        Work nextOnPredicateFailure = Mockito.mock(Work.class);
+        ExecutableWork toExecute = Mockito.mock(ExecutableWork.class);
+        ExecutableWork nextOnPredicateSuccess = Mockito.mock(ExecutableWork.class);
+        ExecutableWork nextOnPredicateFailure = Mockito.mock(ExecutableWork.class);
         Context context = Mockito.mock(Context.class);
         ReportPredicate predicate = ReportPredicate.ALWAYS_FALSE;
         ConditionalFlow conditionalFlow = ConditionalFlow.Builder.aNewConditionalFlow()

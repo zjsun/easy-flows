@@ -23,6 +23,7 @@
  */
 package org.jeasy.flows.flow;
 
+import org.jeasy.flows.work.Executable;
 import org.jeasy.flows.work.Work;
 import org.jeasy.flows.work.Report;
 
@@ -46,7 +47,7 @@ class ParallelExecutor {
     List<Report> executeInParallel(List<Work> workUnits, Context context) {
         // prepare tasks for parallel submission
         List<Callable<Report>> tasks = new ArrayList<>(workUnits.size());
-        workUnits.forEach(work -> tasks.add(() -> work.execute(context)));
+        workUnits.forEach(work -> tasks.add(() -> ((Executable)work).execute(context)));
 
         // submit work units and wait for results
         List<Future<Report>> futures;

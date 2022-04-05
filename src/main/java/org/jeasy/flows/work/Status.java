@@ -41,7 +41,7 @@ public enum Status {
     COMPLETED,
 
     /**
-     * 等待外部完成Work
+     * 等待外部/人工处理
      */
     WAITING
 }

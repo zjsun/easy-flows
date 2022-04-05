@@ -25,6 +25,7 @@ package org.jeasy.flows.flow;
 
 import org.assertj.core.api.Assertions;
 import org.jeasy.flows.work.DefaultReport;
+import org.jeasy.flows.work.Executable;
 import org.jeasy.flows.work.Work;
 import org.jeasy.flows.work.Report;
 import org.jeasy.flows.work.Status;
@@ -58,7 +59,7 @@ public class ParallelExecutorTest {
         Assertions.assertThat(work2.isExecuted()).isTrue();
     }
 
-    static class HelloWorldWork implements Work {
+    static class HelloWorldWork implements Work, Executable {
 
         private final String name;
         private final Status status;

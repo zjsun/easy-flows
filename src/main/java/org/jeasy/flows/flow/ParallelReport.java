@@ -37,21 +37,27 @@ import java.util.List;
 public class ParallelReport implements Report {
 
     private final List<Report> reports;
+    private final ParallelPolicy policy;
 
     /**
      * Create a new {@link ParallelReport}.
+     *
+     * @param parallelPolicy
      */
-    public ParallelReport() {
-        this(new ArrayList<>());
+    public ParallelReport(ParallelPolicy parallelPolicy) {
+        this(new ArrayList<>(), parallelPolicy);
+
     }
 
     /**
      * Create a new {@link ParallelReport}.
      *
-     * @param reports of works executed in parallel
+     * @param reports        of works executed in parallel
+     * @param parallelPolicy
      */
-    public ParallelReport(List<Report> reports) {
+    public ParallelReport(List<Report> reports, ParallelPolicy parallelPolicy) {
         this.reports = reports;
+        this.policy = parallelPolicy;
     }
 
     /**
@@ -85,12 +91,31 @@ public class ParallelReport implements Report {
      */
     @Override
     public Status getStatus() {
-        for (Report report : reports) {
-            if (report.getStatus() == Status.FAILED || report.getStatus() == Status.WAITING) {
-                return report.getStatus();
-            }
+        switch (policy) {
+            case OR:
+                Report waiting = null, failed = null;
+                for (Report report : reports) {
+                    if (report.getStatus() == Status.COMPLETED) {
+                        return report.getStatus();
+                    } else if (report.getStatus() == Status.WAITING) {
+                        waiting = report;
+                    } else if (report.getStatus() == Status.FAILED) {
+                        failed = report;
+                    }
+                }
+                return waiting != null ? waiting.getStatus() : (failed != null ? failed.getStatus() : Status.COMPLETED);
+            case AND:
+            default:
+                Report completed = null;
+                for (Report report : reports) {
+                    if (report.getStatus() == Status.FAILED || report.getStatus() == Status.WAITING) {
+                        return report.getStatus();
+                    } else {
+                        completed = report;
+                    }
+                }
+                return completed != null ? completed.getStatus() : Status.COMPLETED;
         }
-        return Status.COMPLETED;
     }
 
     /**
@@ -119,7 +144,15 @@ public class ParallelReport implements Report {
     @Override
     public Context getContext() {
         Context context = new Context();
-        reports.forEach(report -> context.getValues().putAll(report.getContext().getValues()));
+        for (Report report : reports) {
+            Context partialContext = report.getContext();
+            for (String key : partialContext.valueKeys()) {
+                context.setValue(key, partialContext.getValue(key));
+            }
+            for (String name : partialContext.statusNames()) {
+                context.setStatus(name, partialContext.getStatus(name));
+            }
+        }
         return context;
     }
 }

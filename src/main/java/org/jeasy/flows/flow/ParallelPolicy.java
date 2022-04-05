@@ -6,6 +6,5 @@ package org.jeasy.flows.flow;
  */
 public enum ParallelPolicy {
     AND,
-    OR,
-
+    OR
 }

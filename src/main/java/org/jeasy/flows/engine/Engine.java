@@ -23,10 +23,9 @@
  */
 package org.jeasy.flows.engine;
 
+import org.jeasy.flows.flow.Context;
 import org.jeasy.flows.flow.Flow;
 import org.jeasy.flows.work.Report;
-import org.jeasy.flows.flow.Context;
-import org.jeasy.flows.work.Status;
 
 /**
  * Interface for a workflow engine.
@@ -35,17 +34,13 @@ import org.jeasy.flows.work.Status;
  */
 public interface Engine {
 
-    void add(Flow flow);
-    Flow remove(String name);
-
     /**
-     * Run the given workflow and return its report.
+     * 运行flow，若上次run之后是WAITING结果，则外部修改过context之后可继续执行
      *
-     * @param flow to run
-     * @param context context in which the workflow will be run
-     * @return workflow report
+     * @param flow    工作流定义
+     * @param context 实例状态/上下文
+     * @return
      */
     Report run(Flow flow, Context context);
 
-    Report notify(String name, String workName, Status status);
 }

@@ -38,7 +38,7 @@ public class ParallelReportTest {
 	public void setUp() {
 		exception = new Exception("test exception");
 		Context context = new Context();
-		parallelReport = new ParallelReport();
+		parallelReport = new ParallelReport(ParallelPolicy.AND);
 		parallelReport.add(new DefaultReport(Status.FAILED, context, exception));
 		parallelReport.add(new DefaultReport(Status.COMPLETED, context));
 	}
