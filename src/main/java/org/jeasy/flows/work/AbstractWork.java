@@ -20,8 +20,9 @@ public abstract class AbstractWork implements ExecutableWork {
 
     @Override
     public final Report execute(Context context) {
-        if (context.getStatus(getName()) == Status.COMPLETED) {
-            return new DefaultReport(Status.COMPLETED, context);
+        Status last = context.getStatus(getName());
+        if (last != null && last != Status.WAITING) {
+            return new DefaultReport(last, context);
         }
 
         Report report = executeInternal(context);
