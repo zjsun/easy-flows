@@ -120,7 +120,7 @@ public class ConditionalFlow extends AbstractFlow {
                 this.initialWorkUnit = new NoOpWork();
                 this.nextOnPredicateSuccess = new NoOpWork();
                 this.nextOnPredicateFailure = new NoOpWork();
-                this.predicate = ReportPredicate.ALWAYS_FALSE;
+                this.predicate = ReportPredicate.ALWAYS_TRUE;
             }
 
             @Override

@@ -95,7 +95,7 @@ public class RepeatFlow extends AbstractFlow {
             BuildSteps() {
                 this.name = UUID.randomUUID().toString();
                 this.work = new NoOpWork();
-                this.predicate = ReportPredicate.ALWAYS_FALSE;
+                this.predicate = ReportPredicate.ALWAYS_TRUE;
             }
 
             @Override
